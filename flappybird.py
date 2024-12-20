@@ -14,7 +14,7 @@ pygame.display.set_caption("Flappy Bird Clone")
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-BLUE = (135, 206, 235)
+
 
 # Clock
 clock = pygame.time.Clock()
@@ -80,19 +80,26 @@ class Pipe:
 
 # Main game loop
 def main():
-    bird = Bird()
-    pipes = [Pipe(SCREEN_WIDTH)]
-    score = 0
+    def draw_text(text, size, color, x, y):
+        font = pygame.font.Font(None, size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect(center=(x, y))
+        SCREEN.blit(text_surface, text_rect)
+
+    def reset_game():
+        return Bird(), [Pipe(SCREEN_WIDTH)], 0
+
+    bird, pipes, score = reset_game()
     running = True
 
     while running:
-        SCREEN.fill(BLUE)
         SCREEN.blit(bg_img, (0, 0))
 
         # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit()
+                sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     bird.jump()
@@ -125,8 +132,26 @@ def main():
         pygame.display.flip()
         clock.tick(FPS)
 
-    pygame.quit()
-    sys.exit()
+    # Game Over screen  
+    SCREEN.fill(BLACK)
+    draw_text("Game Over", 50, WHITE, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3)
+    draw_text(f"Your Score: {score}", 36, WHITE, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+    draw_text("Press R to Replay or Q to Quit", 30, WHITE, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 1.5)
+    pygame.display.flip()
+
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:  # Replay
+                    bird, pipes, score = reset_game()
+                    main()
+                if event.key == pygame.K_q:  # Quit
+                    pygame.quit()
+                    sys.exit()
 
 if __name__ == "__main__":
     main()
